@@ -1,0 +1,590 @@
+ <!doctype html>
+<html lang="ar" dir="rtl">
+ <head><script>window["__codeletBootstrap__"]=JSON.parse('{"A":"A","B":"20260731-05-8d4b1dd","C":{"Abril Fatface":"YACgEZbkUVE,0","Alfa Slab One":"YACgEYS9sJU,0","Anton":"YACgEcYqQ-A,0","Archivo":"YAHO2-t-jNE,0","Arial":"YAGyDvJ_4Ts,0","Bebas Neue":"YACgESME5ew,0","Broken Glyph":"YADZ-exUkv0,0","Canva Sans":"YAFdJjTk5UU,0","Caveat":"YALBs2ploWQ,0","Comic Sans MS":"YAHO2VMiyZo,0","Cormorant Garamond":"YAFdJhX-538,0","Courier New":"YAGzXiGs0_8,0","DM Sans":"YAD1aU3sLnI,0","DM Serif Display":"YAD1aYG82rc,0","Forum":"YACgEcnnqB4,0","Fraunces":"YAEul-FRQw4,0","Georgia":"YAGzXkO0pEM,0","Ghost Mono":"YAHO2EIdDP0,0","Helvetica Neue":"YAFcf6CtJfI,0","Impact":"YAFcfnjI7Vk,0","Inter":"YAFdJvSyp_k,3","Iowan Old Style":"YAGNIFa8j9o,0","Jacques Francois":"YAHO2a5g66Q,0","JetBrains Mono":"YADy3sAhvXQ,0","Oleo Script":"YACgEQQ14jI,0","Playfair Display":"YAFdJhem5V8,1","Poppins":"YAE5fPSY9qM,0","Press Start 2P":"YAFyGr-8pmQ,0","Source Sans 3":"YAG4lO1Mj10,0","Space Grotesk":"YAHO2sjPCSM,0","Times New Roman":"YAGzXW3gftg,0","Times":"YAGzXW3gftg,0","Trebuchet MS":"YAFcfrglpVA,0","Verdana":"YAGzXTctYtQ,0","Work Sans":"YAGXhLOKv44,0","Yellowtail":"YACgEYG4kG4,0"}}');</script><script src="/_sdk/1c274b9c2bdd3519.telemetry_sdk.js" integrity="sha512-QvDGWM2/VIwB7KXA4cwqkIBlxCdJGd0uO9ksM8wsqNKNiFgewrwdYlGY9ioCTg42Djm5Sw7uha/WH60UzzKOhQ=="></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>رحلة الحروف العربية</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700;900&amp;display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <style>
+        * { font-family: 'Noto Sans Arabic', sans-serif; }
+        body { overflow-x: hidden; }
+        .screen { display: none; }
+        .screen.active { display: flex; }
+        .letter-circle {
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .letter-circle:hover { transform: scale(1.15); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .grid-cell {
+            width: 50px; height: 50px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .grid-cell.correct { background: #86efac !important; animation: pop 0.3s; }
+        .grid-cell.wrong { animation: shake 0.3s; background: #fca5a5 !important; }
+        .btn-main {
+            padding: 14px 36px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            border: none;
+        }
+        .btn-main:hover { transform: scale(1.05); }
+        .btn-main:active { transform: scale(0.97); }
+        .confetti-piece {
+            position: fixed;
+            width: 10px; height: 10px;
+            border-radius: 2px;
+            animation: confetti-fall 2s forwards;
+            pointer-events: none;
+            z-index: 9999;
+        }
+        @keyframes confetti-fall {
+            0% { opacity: 1; transform: translateY(0) rotate(0deg); }
+            100% { opacity: 0; transform: translateY(100vh) rotate(720deg); }
+        }
+        @keyframes pop { 0%{transform:scale(1)} 50%{transform:scale(1.3)} 100%{transform:scale(1)} }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+        @keyframes bounce-in { 0%{transform:scale(0)} 50%{transform:scale(1.2)} 100%{transform:scale(1)} }
+        .bounce-in { animation: bounce-in 0.4s; }
+        .draggable { cursor: grab; touch-action: none; user-select: none; }
+        .draggable:active { cursor: grabbing; }
+        .drop-zone { min-height: 60px; border: 3px dashed #c4b5fd; border-radius: 16px; transition: all 0.2s; }
+        .drop-zone.over { border-color: #7c3aed; background: #ede9fe; }
+        .star-icon { color: #f59e0b; }
+        .medal { font-size: 2.5rem; }
+        .activity-nav { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+        .activity-btn {
+            padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 0.85rem;
+            cursor: pointer; border: 2px solid transparent; transition: all 0.2s;
+        }
+        .activity-btn.active { border-color: #7c3aed; box-shadow: 0 2px 8px rgba(124,58,237,0.3); }
+    </style>
+  <script src="/_sdk/63b5ed99e5b990a7.data_sdk.js" type="text/javascript" integrity="sha512-fLUGE0rNLPgXS9olxs6QORKg6Diqpi0PSKoNistdAaH/GruBuq5/XhrOdSOcKfqcIIRQ1KvO66J1vCBvvLj4rA=="></script>
+  <script src="/_sdk/797e0a7e8af7c7f8.resizing_sdk.js" type="text/javascript" integrity="sha512-giNZj5eBnASPpYcJXEVOn6FguxFDnaH+gnf5nbRfUgfRDqtOdV+5Dna/CwvXiPeR//Plhtbt32CML3VF4+oCLw=="></script>
+ </head>
+ <body data-template-id="__page-root" class="min-h-screen w-full flex flex-col items-center justify-center"><!-- MAIN SCREEN -->
+  <div id="screen-main" class="screen active flex-col items-center justify-center gap-6 p-6 w-full min-h-screen">
+   <div class="text-center">
+    <h1 data-template-id="main-title" class="canva-text text-4xl md:text-5xl font-black mb-3"></h1>
+    <p data-template-id="main-subtitle" class="canva-text text-lg md:text-xl"></p>
+   </div>
+   <div class="flex flex-col gap-4 mt-6"><button data-template-id="btn-start" class="canva-button btn-main" onclick="showScreen('screen-letters')"></button> <button data-template-id="btn-rewards" class="canva-button btn-main" onclick="showScreen('screen-rewards')"></button> <button data-template-id="btn-sound" class="canva-button btn-main" onclick="toggleSound()"></button> <button data-template-id="btn-teacher" class="canva-button btn-main" onclick="showScreen('screen-teacher')"></button>
+   </div>
+  </div><!-- LETTER SELECTION -->
+  <div id="screen-letters" class="screen flex-col items-center gap-6 p-4 w-full min-h-screen">
+   <header class="w-full flex justify-between items-center max-w-3xl"><button class="p-2 rounded-full bg-white/80 shadow" onclick="showScreen('screen-main')"><i data-lucide="arrow-right" style="width:24px;height:24px;color:#6d28d9"></i></button>
+    <h2 data-template-id="letters-title" class="canva-text text-2xl font-bold"></h2>
+    <div id="star-count-display" class="flex items-center gap-1">
+     <i data-lucide="star" style="width:20px;height:20px;color:#f59e0b"></i><span id="star-num" class="font-bold text-amber-600">0</span>
+    </div>
+   </header>
+   <div id="letters-grid" class="grid grid-cols-7 gap-3 max-w-md mx-auto mt-4"></div>
+  </div><!-- LETTER DETAIL -->
+  <div id="screen-detail" class="screen flex-col items-center gap-4 p-4 w-full min-h-screen">
+   <header class="w-full flex justify-between items-center max-w-3xl"><button class="p-2 rounded-full bg-white/80 shadow" onclick="showScreen('screen-letters')"><i data-lucide="arrow-right" style="width:24px;height:24px;color:#6d28d9"></i></button>
+    <h2 id="detail-letter-big" class="text-6xl font-black text-purple-700"></h2>
+    <div></div>
+   </header>
+   <div class="flex flex-col items-center gap-3"><img id="detail-image" class="w-40 h-40 object-cover rounded-2xl shadow-lg" loading="lazy">
+    <p id="detail-word" class="text-2xl font-bold text-gray-700"></p><button class="btn-main bg-purple-500 text-white" onclick="pronounceCurrent()">🔊 استمع</button>
+   </div>
+   <div class="activity-nav mt-4"><button class="activity-btn bg-pink-100 text-pink-700" onclick="startActivity(1)">ابحث عن الحرف</button> <button class="activity-btn bg-blue-100 text-blue-700" onclick="startActivity(2)">الحرف الناقص</button> <button class="activity-btn bg-green-100 text-green-700" onclick="startActivity(3)">اختر الصورة</button> <button class="activity-btn bg-yellow-100 text-yellow-700" onclick="startActivity(4)">اسحب الحرف</button> <button class="activity-btn bg-purple-100 text-purple-700" onclick="startActivity(5)">رتب الكلمة</button>
+   </div>
+  </div><!-- ACTIVITY AREA -->
+  <div id="screen-activity" class="screen flex-col items-center gap-4 p-4 w-full min-h-screen">
+   <header class="w-full flex justify-between items-center max-w-3xl"><button class="p-2 rounded-full bg-white/80 shadow" onclick="showScreen('screen-detail')"><i data-lucide="arrow-right" style="width:24px;height:24px;color:#6d28d9"></i></button>
+    <h2 id="activity-title" class="text-xl font-bold text-purple-700"></h2>
+    <div class="flex items-center gap-1">
+     <i data-lucide="star" style="width:20px;height:20px;color:#f59e0b"></i><span id="activity-stars" class="font-bold text-amber-600">0</span>
+    </div>
+   </header>
+   <div id="activity-content" class="w-full max-w-lg flex flex-col items-center gap-4 mt-4"></div>
+  </div><!-- REWARDS -->
+  <div id="screen-rewards" class="screen flex-col items-center gap-6 p-6 w-full min-h-screen">
+   <header class="w-full flex justify-between items-center max-w-3xl"><button class="p-2 rounded-full bg-white/80 shadow" onclick="showScreen('screen-main')"><i data-lucide="arrow-right" style="width:24px;height:24px;color:#6d28d9"></i></button>
+    <h2 data-template-id="rewards-title" class="canva-text text-2xl font-bold"></h2>
+    <div></div>
+   </header>
+   <div id="rewards-content" class="flex flex-col items-center gap-4 mt-4"></div>
+  </div><!-- FINAL / CELEBRATION -->
+  <div id="screen-final" class="screen flex-col items-center justify-center gap-6 p-6 w-full min-h-screen">
+   <div class="text-center bounce-in">
+    <p class="text-6xl mb-4">🎉</p>
+    <h2 data-template-id="final-title" class="canva-text text-3xl font-black"></h2>
+    <p data-template-id="final-subtitle" class="canva-text text-xl mt-2"></p>
+    <p id="final-stars" class="text-2xl font-bold text-amber-500 mt-4"></p>
+   </div><button data-template-id="btn-replay" class="canva-button btn-main" onclick="resetGame()"></button>
+  </div><!-- TEACHER MODE -->
+  <div id="screen-teacher" class="screen flex-col items-center gap-6 p-6 w-full min-h-screen">
+   <header class="w-full flex justify-between items-center max-w-3xl"><button class="p-2 rounded-full bg-white/80 shadow" onclick="showScreen('screen-main')"><i data-lucide="arrow-right" style="width:24px;height:24px;color:#6d28d9"></i></button>
+    <h2 data-template-id="teacher-title" class="canva-text text-2xl font-bold"></h2>
+    <div></div>
+   </header>
+   <div class="bg-white/80 rounded-2xl p-6 w-full max-w-md shadow-lg">
+    <p class="font-bold text-lg mb-2">⭐ النجوم: <span id="teacher-stars">0</span></p>
+    <p class="font-bold text-lg mb-2">🏅 الميداليات: <span id="teacher-medals"></span></p>
+    <p class="font-bold text-lg mb-4">✅ الحروف المكتملة: <span id="teacher-completed">0</span>/28</p>
+    <h3 class="font-bold mb-2">اختر حرفاً:</h3>
+    <div id="teacher-letters" class="grid grid-cols-7 gap-2"></div><button class="btn-main bg-red-400 text-white mt-4 w-full" onclick="resetGame()">إعادة تعيين</button>
+   </div>
+  </div>
+  <script src="/_sdk/afc2d393c2ac926b.editing_sdk.js" integrity="sha512-Ue7lZoRec1IGq7j3H/38aWZalTxanTjFGoCKdWTFUGFJwCO6Pinekpb6vP1nEQ3ZFuEOglmaFKfrRMeLheTxnw=="></script>
+  <script>
+    // Data
+    const lettersData = [
+        {letter:'أ',word:'أرنب',emoji:'🐰',img:'https://images.pexels.com/photos/20704974/pexels-photo-20704974.jpeg?auto=compress&cs=tinysrgb&w=400'},
+        {letter:'ب',word:'بطة',emoji:'🦆',img:'https://images.pexels.com/photos/7489743/pexels-photo-7489743.jpeg?auto=compress&cs=tinysrgb&w=400'},
+        {letter:'ت',word:'تفاحة',emoji:'🍎',img:'https://images.pexels.com/photos/102104/pexels-photo-102104.jpeg?auto=compress&cs=tinysrgb&w=400'},
+        {letter:'ث',word:'ثعلب',emoji:'🦊',img:'https://images.pexels.com/photos/23914490/pexels-photo-23914490.jpeg?auto=compress&cs=tinysrgb&w=400'},
+        {letter:'ج',word:'جمل',emoji:'🐪',img:'https://images.pexels.com/photos/13166854/pexels-photo-13166854.jpeg?auto=compress&cs=tinysrgb&w=400'},
+        {letter:'ح',word:'حصان',emoji:'🐴',img:'https://images.pexels.com/photos/32286998/pexels-photo-32286998.jpeg?auto=compress&cs=tinysrgb&w=400'},
+        {letter:'خ',word:'خروف',emoji:'🐑',img:'https://images.pexels.com/photos/31507577/pexels-photo-31507577.jpeg?auto=compress&cs=tinysrgb&w=400'},
+        {letter:'د',word:'ديك',emoji:'🐓',img:'https://images.pexels.com/photos/36072149/pexels-photo-36072149.jpeg?auto=compress&cs=tinysrgb&w=400'},
+        {letter:'ذ',word:'ذرة',emoji:'🌽',img:'https://images.pexels.com/photos/38519270/pexels-photo-38519270.jpeg?auto=compress&cs=tinysrgb&w=400'},
+        {letter:'ر',word:'رمان',emoji:'🍎',img:'https://images.pexels.com/photos/9899227/pexels-photo-9899227.jpeg?auto=compress&cs=tinysrgb&w=400'},
+        {letter:'ز',word:'زرافة',emoji:'🦒',img:'https://images.pexels.com/photos/29106247/pexels-photo-29106247.jpeg?auto=compress&cs=tinysrgb&w=400'},
+        {letter:'س',word:'سمكة',emoji:'🐟',img:'https://images.pexels.com/photos/18528201/pexels-photo-18528201.jpeg?auto=compress&cs=tinysrgb&w=400'},
+        {letter:'ش',word:'شمس',emoji:'☀️',img:'https://images.pexels.com/photos/7085605/pexels-photo-7085605.jpeg?auto=compress&cs=tinysrgb&w=400'},
+        {letter:'ص',word:'صقر',emoji:'🦅',img:'https://images.pexels.com/photos/34285029/pexels-photo-34285029.jpeg?auto=compress&cs=tinysrgb&w=400'},
+        {letter:'ض',word:'ضفدع',emoji:'🐸',img:'https://images.pexels.com/photos/70083/frog-macro-amphibian-green-70083.jpeg?auto=compress&cs=tinysrgb&w=400'},
+        {letter:'ط',word:'طائرة',emoji:'✈️',img:'https://images.pexels.com/photos/1493756/pexels-photo-1493756.jpeg?auto=compress&cs=tinysrgb&w=400'},
+        {letter:'ظ',word:'ظرف',emoji:'✉️',img:'https://images.pexels.com/photos/5040817/pexels-photo-5040817.jpeg?auto=compress&cs=tinysrgb&w=400'},
+        {letter:'ع',word:'عنب',emoji:'🍇',img:'https://images.pexels.com/photos/760281/pexels-photo-760281.jpeg?auto=compress&cs=tinysrgb&w=400'},
+        {letter:'غ',word:'غزال',emoji:'🦌',img:'https://images.pexels.com/photos/8520292/pexels-photo-8520292.jpeg?auto=compress&cs=tinysrgb&w=400'},
+        {letter:'ف',word:'فراشة',emoji:'🦋',img:'https://images.pexels.com/photos/7323113/pexels-photo-7323113.jpeg?auto=compress&cs=tinysrgb&w=400'},
+        {letter:'ق',word:'قمر',emoji:'🌙',img:'https://images.pexels.com/photos/16500828/pexels-photo-16500828.jpeg?auto=compress&cs=tinysrgb&w=400'},
+        {letter:'ك',word:'كتاب',emoji:'📚',img:'https://images.pexels.com/photos/4887199/pexels-photo-4887199.jpeg?auto=compress&cs=tinysrgb&w=400'},
+        {letter:'ل',word:'ليمون',emoji:'🍋',img:'https://images.pexels.com/photos/1367232/pexels-photo-1367232.jpeg?auto=compress&cs=tinysrgb&w=400'},
+        {letter:'م',word:'موز',emoji:'🍌',img:'https://images.pexels.com/photos/61127/pexels-photo-61127.jpeg?auto=compress&cs=tinysrgb&w=400'},
+        {letter:'ن',word:'نحلة',emoji:'🐝',img:'https://images.pexels.com/photos/29562511/pexels-photo-29562511.jpeg?auto=compress&cs=tinysrgb&w=400'},
+        {letter:'هـ',word:'هلال',emoji:'🌙',img:'https://images.pexels.com/photos/9187144/pexels-photo-9187144.jpeg?auto=compress&cs=tinysrgb&w=400'},
+        {letter:'و',word:'وردة',emoji:'🌹',img:'https://images.pexels.com/photos/1210009/pexels-photo-1210009.jpeg?auto=compress&cs=tinysrgb&w=400'},
+        {letter:'ي',word:'يد',emoji:'✋',img:'https://images.pexels.com/photos/4784495/pexels-photo-4784495.jpeg?auto=compress&cs=tinysrgb&w=400'}
+    ];
+
+    const allLetters = lettersData.map(l => l.letter);
+    const pastelColors = ['#fecdd3','#fbcfe8','#f5d0fe','#e9d5ff','#c7d2fe','#bfdbfe','#a5f3fc','#99f6e4','#bbf7d0','#fef08a','#fed7aa','#fecaca'];
+
+    let state = { stars: 0, soundOn: true, currentLetter: null, completedLetters: new Set() };
+
+    // Audio
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playTone(freq, duration, type='sine') {
+        if (!state.soundOn) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + duration);
+    }
+    function playCorrect() { playTone(523,0.1); setTimeout(()=>playTone(659,0.1),100); setTimeout(()=>playTone(784,0.2),200); }
+    function playWrong() { playTone(200,0.3,'sawtooth'); }
+    function playCelebration() { [523,587,659,698,784].forEach((f,i)=>setTimeout(()=>playTone(f,0.15),i*100)); }
+
+    function toggleSound() {
+        state.soundOn = !state.soundOn;
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    // Screens
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        if (id === 'screen-rewards') renderRewards();
+        if (id === 'screen-teacher') renderTeacher();
+        updateStarDisplays();
+    }
+
+    function updateStarDisplays() {
+        document.getElementById('star-num').textContent = state.stars;
+        document.getElementById('activity-stars').textContent = state.stars;
+    }
+
+    // Letter grid
+    function renderLetterGrid(containerId, onClick) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        lettersData.forEach((item, i) => {
+            const div = document.createElement('div');
+            div.className = 'letter-circle shadow-md';
+            div.style.background = pastelColors[i % pastelColors.length];
+            div.textContent = item.letter;
+            if (state.completedLetters.has(item.letter)) div.style.border = '3px solid #22c55e';
+            div.onclick = () => onClick(item);
+            container.appendChild(div);
+        });
+    }
+
+    // Init letter selection
+    function initLetters() {
+        renderLetterGrid('letters-grid', selectLetter);
+    }
+
+    function selectLetter(item) {
+        state.currentLetter = item;
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        document.getElementById('detail-letter-big').textContent = item.letter;
+        document.getElementById('detail-image').src = item.img;
+        document.getElementById('detail-word').textContent = item.emoji + ' ' + item.word;
+        showScreen('screen-detail');
+        pronounceCurrent();
+    }
+
+    function pronounceCurrent() {
+        if (!state.soundOn) return;
+        if ('speechSynthesis' in window) {
+            const u = new SpeechSynthesisUtterance(state.currentLetter.letter + '. ' + state.currentLetter.word);
+            u.lang = 'ar-SA'; u.rate = 0.7;
+            speechSynthesis.speak(u);
+        }
+    }
+
+    // Confetti
+    function showConfetti() {
+        const colors = ['#f472b6','#a78bfa','#60a5fa','#34d399','#fbbf24','#fb923c'];
+        for (let i = 0; i < 40; i++) {
+            const piece = document.createElement('div');
+            piece.className = 'confetti-piece';
+            piece.style.left = Math.random()*100 + 'vw';
+            piece.style.top = '-10px';
+            piece.style.background = colors[Math.floor(Math.random()*colors.length)];
+            piece.style.animationDelay = Math.random()*0.5 + 's';
+            document.body.appendChild(piece);
+            setTimeout(() => piece.remove(), 2500);
+        }
+    }
+
+    function addStar() {
+        state.stars++;
+        updateStarDisplays();
+        if (state.stars >= 30) { /* could trigger final */ }
+    }
+
+    // ACTIVITIES
+    function startActivity(num) {
+        showScreen('screen-activity');
+        const item = state.currentLetter;
+        const content = document.getElementById('activity-content');
+        content.innerHTML = '';
+
+        if (num === 1) activity1(item, content);
+        else if (num === 2) activity2(item, content);
+        else if (num === 3) activity3(item, content);
+        else if (num === 4) activity4(item, content);
+        else if (num === 5) activity5(item, content);
+
+        document.getElementById('activity-title').textContent =
+            ['','ابحث عن الحرف','الحرف الناقص','اختر الصورة الصحيحة','اسحب الحرف إلى الصورة','رتب الكلمة'][num];
+    }
+
+    // Activity 1: Find the letter
+    function activity1(item, container) {
+        const target = item.letter.replace('هـ','ه');
+        const prompt = document.createElement('p');
+        prompt.className = 'text-lg font-bold text-center';
+        prompt.textContent = `ابحث عن جميع حروف "${item.letter}"`;
+        container.appendChild(prompt);
+
+        const grid = document.createElement('div');
+        grid.className = 'grid grid-cols-5 gap-2 mt-4';
+        let targetCount = 0;
+        const cells = [];
+        // Place 4-6 targets
+        const numTargets = 4 + Math.floor(Math.random()*3);
+        const positions = Array.from({length:25},(_,i)=>i).sort(()=>Math.random()-0.5);
+        const targetPositions = new Set(positions.slice(0, numTargets));
+
+        for (let i = 0; i < 25; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'grid-cell bg-white shadow';
+            let letter;
+            if (targetPositions.has(i)) {
+                letter = target;
+                targetCount++;
+            } else {
+                do { letter = allLetters[Math.floor(Math.random()*allLetters.length)].replace('هـ','ه'); } while (letter === target);
+            }
+            cell.textContent = letter;
+            cell.dataset.isTarget = targetPositions.has(i) ? '1' : '0';
+            cell.onclick = () => {
+                if (cell.classList.contains('correct') || cell.classList.contains('wrong')) return;
+                if (cell.dataset.isTarget === '1') {
+                    cell.classList.add('correct');
+                    playCorrect();
+                    targetCount--;
+                    if (targetCount <= 0) { addStar(); showConfetti(); markCompleted(); }
+                } else {
+                    cell.classList.add('wrong');
+                    playWrong();
+                    setTimeout(() => cell.classList.remove('wrong'), 500);
+                }
+            };
+            grid.appendChild(cell);
+        }
+        // Fix targetCount to actual
+        targetCount = numTargets;
+        container.appendChild(grid);
+    }
+
+    // Activity 2: Missing letter
+    function activity2(item, container) {
+        const word = item.word;
+        const idx = Math.floor(Math.random() * word.length);
+        const missing = word[idx];
+        const display = word.slice(0,idx) + '_' + word.slice(idx+1);
+
+        const prompt = document.createElement('div');
+        prompt.className = 'text-center';
+        prompt.innerHTML = `<p class="text-4xl mb-2">${item.emoji}</p><p class="text-3xl font-bold tracking-wider">${display}</p>`;
+        container.appendChild(prompt);
+
+        const options = [missing];
+        while (options.length < 4) {
+            const r = allLetters[Math.floor(Math.random()*allLetters.length)].replace('هـ','ه');
+            if (!options.includes(r)) options.push(r);
+        }
+        options.sort(() => Math.random()-0.5);
+
+        const btns = document.createElement('div');
+        btns.className = 'grid grid-cols-2 gap-3 mt-6';
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-main text-2xl bg-white shadow-md hover:bg-purple-50';
+            btn.textContent = opt;
+            btn.onclick = () => {
+                if (opt === missing) {
+                    playCorrect(); addStar(); showConfetti(); markCompleted();
+                    prompt.querySelector('p:last-child').textContent = word;
+                    btns.querySelectorAll('button').forEach(b => b.disabled = true);
+                } else {
+                    playWrong();
+                    btn.classList.add('opacity-40');
+                    btn.disabled = true;
+                }
+            };
+            btns.appendChild(btn);
+        });
+        container.appendChild(btns);
+    }
+
+    // Activity 3: Choose correct image
+    function activity3(item, container) {
+        const prompt = document.createElement('p');
+        prompt.className = 'text-lg font-bold text-center';
+        prompt.textContent = `أي صورة تبدأ بحرف "${item.letter}"؟`;
+        container.appendChild(prompt);
+
+        const options = [item];
+        const others = lettersData.filter(l => l.letter !== item.letter).sort(()=>Math.random()-0.5).slice(0,3);
+        options.push(...others);
+        options.sort(() => Math.random()-0.5);
+
+        const grid = document.createElement('div');
+        grid.className = 'grid grid-cols-2 gap-3 mt-4';
+        options.forEach(opt => {
+            const card = document.createElement('button');
+            card.className = 'rounded-xl overflow-hidden shadow-md bg-white p-2 transition hover:scale-105';
+            card.innerHTML = `<img src="${opt.img}" class="w-full h-24 object-cover rounded-lg" loading="lazy"><p class="text-center mt-1 font-bold">${opt.emoji} ${opt.word}</p>`;
+            card.onclick = () => {
+                if (opt === item) {
+                    playCorrect(); addStar(); showConfetti(); markCompleted();
+                    card.style.border = '3px solid #22c55e';
+                } else {
+                    playWrong();
+                    card.classList.add('opacity-40');
+                    card.disabled = true;
+                }
+            };
+            grid.appendChild(card);
+        });
+        container.appendChild(grid);
+    }
+
+    // Activity 4: Drag letter to image
+    function activity4(item, container) {
+        const prompt = document.createElement('p');
+        prompt.className = 'text-lg font-bold text-center';
+        prompt.textContent = 'اسحب الحرف الصحيح إلى الصورة';
+        container.appendChild(prompt);
+
+        const imgDiv = document.createElement('div');
+        imgDiv.className = 'drop-zone flex flex-col items-center justify-center p-4 mt-4';
+        imgDiv.innerHTML = `<img src="${item.img}" class="w-32 h-32 object-cover rounded-xl" loading="lazy"><p class="mt-2 font-bold">${item.emoji} ${item.word}</p>`;
+        imgDiv.ondragover = e => { e.preventDefault(); imgDiv.classList.add('over'); };
+        imgDiv.ondragleave = () => imgDiv.classList.remove('over');
+        imgDiv.ondrop = e => {
+            e.preventDefault(); imgDiv.classList.remove('over');
+            const letter = e.dataTransfer.getData('text/plain');
+            if (letter === item.letter.replace('هـ','ه')) {
+                playCorrect(); addStar(); showConfetti(); markCompleted();
+                imgDiv.style.borderColor = '#22c55e'; imgDiv.style.background = '#dcfce7';
+            } else { playWrong(); }
+        };
+        container.appendChild(imgDiv);
+
+        const letters = [item.letter.replace('هـ','ه')];
+        while (letters.length < 4) {
+            const r = allLetters[Math.floor(Math.random()*allLetters.length)].replace('هـ','ه');
+            if (!letters.includes(r)) letters.push(r);
+        }
+        letters.sort(() => Math.random()-0.5);
+
+        const row = document.createElement('div');
+        row.className = 'flex gap-3 mt-6 justify-center';
+        letters.forEach(l => {
+            const el = document.createElement('div');
+            el.className = 'letter-circle bg-white shadow-lg draggable text-2xl';
+            el.textContent = l;
+            el.draggable = true;
+            el.ondragstart = e => e.dataTransfer.setData('text/plain', l);
+            // Touch support
+            let touchClone = null;
+            el.ontouchstart = e => {
+                const touch = e.touches[0];
+                touchClone = el.cloneNode(true);
+                touchClone.style.position = 'fixed';
+                touchClone.style.zIndex = '9999';
+                touchClone.style.pointerEvents = 'none';
+                touchClone.style.opacity = '0.8';
+                document.body.appendChild(touchClone);
+                moveTouchClone(touch);
+            };
+            el.ontouchmove = e => { e.preventDefault(); moveTouchClone(e.touches[0]); };
+            el.ontouchend = e => {
+                if (touchClone) { touchClone.remove(); touchClone = null; }
+                const touch = e.changedTouches[0];
+                const dropEl = document.elementFromPoint(touch.clientX, touch.clientY);
+                if (dropEl && (dropEl === imgDiv || imgDiv.contains(dropEl))) {
+                    if (l === item.letter.replace('هـ','ه')) {
+                        playCorrect(); addStar(); showConfetti(); markCompleted();
+                        imgDiv.style.borderColor = '#22c55e'; imgDiv.style.background = '#dcfce7';
+                    } else { playWrong(); }
+                }
+            };
+            function moveTouchClone(t) { if(touchClone){touchClone.style.left=(t.clientX-30)+'px';touchClone.style.top=(t.clientY-30)+'px';} }
+            row.appendChild(el);
+        });
+        container.appendChild(row);
+    }
+
+    // Activity 5: Arrange word
+    function activity5(item, container) {
+        const word = item.word;
+        const letters = word.split('').sort(() => Math.random()-0.5);
+
+        const prompt = document.createElement('div');
+        prompt.className = 'text-center';
+        prompt.innerHTML = `<p class="text-4xl mb-2">${item.emoji}</p><p class="text-lg font-bold">رتب الحروف لتكوين الكلمة</p>`;
+        container.appendChild(prompt);
+
+        const answerSlots = document.createElement('div');
+        answerSlots.className = 'flex gap-2 justify-center mt-4';
+        const slots = [];
+        for (let i = 0; i < word.length; i++) {
+            const slot = document.createElement('div');
+            slot.className = 'w-12 h-12 border-2 border-purple-300 rounded-xl flex items-center justify-center text-2xl font-bold bg-white';
+            slot.dataset.index = i;
+            answerSlots.appendChild(slot);
+            slots.push(slot);
+        }
+        container.appendChild(answerSlots);
+
+        let currentIndex = 0;
+        const letterBtns = document.createElement('div');
+        letterBtns.className = 'flex gap-2 justify-center flex-wrap mt-6';
+        letters.forEach((l, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'letter-circle bg-white shadow-md text-xl';
+            btn.textContent = l;
+            btn.onclick = () => {
+                if (currentIndex >= word.length) return;
+                slots[currentIndex].textContent = l;
+                btn.classList.add('opacity-30');
+                btn.disabled = true;
+                currentIndex++;
+                if (currentIndex === word.length) {
+                    const result = slots.map(s => s.textContent).join('');
+                    if (result === word) {
+                        playCorrect(); addStar(); showConfetti(); markCompleted();
+                    } else {
+                        playWrong();
+                        setTimeout(() => {
+                            currentIndex = 0;
+                            slots.forEach(s => s.textContent = '');
+                            letterBtns.querySelectorAll('button').forEach(b => { b.classList.remove('opacity-30'); b.disabled = false; });
+                        }, 800);
+                    }
+                }
+            };
+            letterBtns.appendChild(btn);
+        });
+        container.appendChild(letterBtns);
+    }
+
+    function markCompleted() {
+        if (state.currentLetter) state.completedLetters.add(state.currentLetter.letter);
+    }
+
+    // Rewards
+    function renderRewards() {
+        const c = document.getElementById('rewards-content');
+        const bronze = Math.floor(state.stars / 5);
+        const silver = Math.floor(state.stars / 15);
+        const gold = Math.floor(state.stars / 30);
+        c.innerHTML = `
+            <p class="text-5xl star-icon">⭐</p>
+            <p class="text-2xl font-bold">${state.stars} نجمة</p>
+            <div class="flex gap-4 mt-4">
+                <div class="text-center"><p class="medal">🥉</p><p class="font-bold">${bronze}</p></div>
+                <div class="text-center"><p class="medal">🥈</p><p class="font-bold">${silver}</p></div>
+                <div class="text-center"><p class="medal">🥇</p><p class="font-bold">${gold}</p></div>
+            </div>
+            <p class="mt-4 text-gray-600">أكمل الأنشطة لجمع المزيد من النجوم!</p>
+            ${state.stars >= 30 ? '<button class="btn-main bg-gradient-to-r from-purple-500 to-pink-500 text-white mt-4" onclick="showFinal()">🎉 شاهد الاحتفال</button>' : ''}
+        `;
+    }
+
+    function showFinal() {
+        showScreen('screen-final');
+        document.getElementById('final-stars').textContent = '⭐ ' + state.stars + ' نجمة';
+        showConfetti(); playCelebration();
+    }
+
+    // Teacher
+    function renderTeacher() {
+        document.getElementById('teacher-stars').textContent = state.stars;
+        document.getElementById('teacher-completed').textContent = state.completedLetters.size;
+        const bronze = Math.floor(state.stars/5), silver = Math.floor(state.stars/15), gold = Math.floor(state.stars/30);
+        document.getElementById('teacher-medals').textContent = `🥉${bronze} 🥈${silver} 🥇${gold}`;
+        renderLetterGrid('teacher-letters', (item) => { selectLetter(item); });
+    }
+
+    function resetGame() {
+        state.stars = 0; state.completedLetters.clear();
+        updateStarDisplays();
+        showScreen('screen-main');
+    }
+
+    // Init
+    document.addEventListener('DOMContentLoaded', () => {
+        initLetters();
+        lucide.createIcons();
+    });
+    </script>
+ </body>
+</html>
